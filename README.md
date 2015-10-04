@@ -24,7 +24,7 @@ script disables the qtquickcontrols module.
 If you want to use qmlrs add the following lines to your _Cargo.toml_:
 
 	[dependencies.qmlrs]
-	git = "git://github.com/cyndis/qmlrs.git"
+	git = "git://github.com/Jxspy/rust-qml.git"
 
 ## Example
 
@@ -40,13 +40,15 @@ extern crate qmlrs;
 
 struct Factorial;
 impl Factorial {
-    fn calculate(&self, x: i64) -> i64 {
+    fn calculate(&self x: i64) -> i64 {
+        self.call();
         std::iter::range_inclusive(1, x).fold(1, |t,c| t * c)
     }
 }
 
 Q_OBJECT! { Factorial:
     slot fn calculate(i64);
+    signal fn call();
 }
 
 fn main() {
