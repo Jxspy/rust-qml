@@ -1,0 +1,2 @@
+/usr/bin/ar cr liblibrsqml.a  CMakeFiles/librsqml.dir/engine.cpp.o CMakeFiles/librsqml.dir/dynamicobject.cpp.o CMakeFiles/librsqml.dir/api.cpp.o CMakeFiles/librsqml.dir/librsqml_automoc.cpp.o
+/usr/bin/ranlib liblibrsqml.a

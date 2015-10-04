@@ -1,0 +1,2 @@
+/home/xiaobai/Work/rust/qmlrs/ext/lib/build/CMakeFiles/librsqml.dir
+/home/xiaobai/Work/rust/qmlrs/ext/lib/build/CMakeFiles/librsqml_automoc.dir

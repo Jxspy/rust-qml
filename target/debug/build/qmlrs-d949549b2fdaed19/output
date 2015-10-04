@@ -1,0 +1,8 @@
+cargo:rustc-link-lib=static=qmlrswrapper
+cargo:rustc-link-lib=dylib=stdc++
+cargo:rustc-link-search=native=/home/xiaobai/Work/rust/qmlrs/ext/libqmlrswrapper/build
+cargo:rustc-link-lib=Qt5Quick
+cargo:rustc-link-lib=Qt5Gui
+cargo:rustc-link-lib=Qt5Qml
+cargo:rustc-link-lib=Qt5Network
+cargo:rustc-link-lib=Qt5Core

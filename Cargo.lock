@@ -1,0 +1,18 @@
+[root]
+name = "qmlrs"
+version = "0.0.1"
+dependencies = [
+ "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pkg-config 0.3.5 (git+https://github.com/alexcrichton/pkg-config-rs)",
+]
+
+[[package]]
+name = "libc"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "pkg-config"
+version = "0.3.5"
+source = "git+https://github.com/alexcrichton/pkg-config-rs#42f1704b9e0cc3d1bb21621eea696a85ab442666"
+
