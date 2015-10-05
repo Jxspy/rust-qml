@@ -19,27 +19,27 @@ mod macros;
 mod variant;
 
 pub trait Object {
-    fn qt_metaobject(&self) -> MetaObject;
-    fn qt_metacall(&mut self, slot: i32, args: *const *const OpaqueQVariant);
+  fn qt_metaobject(&self) -> MetaObject;
+  fn qt_metacall(&mut self, slot: i32, args: *const *const OpaqueQVariant);
 }
 
 pub fn __qobject_emit<T: Object>(obj: &T, id: u32) {
-    unsafe {
-        ffi::rsqml_object_emit_signal(get_qobject(obj), id as c_uint);
-    }
+  unsafe {
+    ffi::rsqml_object_emit_signal(get_qobject(obj), id as c_uint);
+  }
 }
 
 /* This is unsafe in case the user copies the data. Might need to figure out something different. */
 fn get_qobject<T: Object>(ptr: &T) -> *mut QObject {
-    unsafe {
-        let t_addr: usize = std::mem::transmute(ptr);
-        let hdr: &PropHdr<T> = std::mem::transmute(t_addr - std::mem::size_of::<*mut QObject>());
-        hdr.qobj
-    }
+  unsafe {
+    let t_addr: usize = std::mem::transmute(ptr);
+    let hdr: &PropHdr<T> = std::mem::transmute(t_addr - std::mem::size_of::<*mut QObject>());
+    hdr.qobj
+  }
 }
 
 struct EngineInternal {
-    p: *mut QrsEngine,
+  p: *mut QrsEngine,
 }
 
 /* Hack to get invoke working. Need to figure out better way for invokes anyway.. */
@@ -47,84 +47,84 @@ unsafe impl Send for EngineInternal { }
 unsafe impl Sync for EngineInternal { }
 
 impl Drop for EngineInternal {
-    fn drop(&mut self) {
-        unsafe { ffi::rsqml_destroy_engine(self.p); }
-    }
+  fn drop(&mut self) {
+    unsafe { ffi::rsqml_destroy_engine(self.p); }
+  }
 }
 
 pub struct Engine {
-    i: Arc<EngineInternal>,
+  i: Arc<EngineInternal>,
 }
 
 #[repr(packed)]
 struct PropHdr<T: Object> {
-    qobj: *mut QObject,
-    obj: T
+  qobj: *mut QObject,
+  obj: T
 }
 
 extern "C" fn slot_handler<T: Object>(data: *mut c_void, slot: c_int,
-                                      args: *const *const ffi::QVariant){
-    unsafe {
-        let hdr: &mut PropHdr<T> = std::mem::transmute(data);
-        hdr.obj.qt_metacall(slot as i32, args);
-    }
+  args: *const *const ffi::QVariant){
+  unsafe {
+    let hdr: &mut PropHdr<T> = std::mem::transmute(data);
+    hdr.obj.qt_metacall(slot as i32, args);
+  }
 }
 
 impl Engine {
-    pub fn new() -> Engine {
-        let p = unsafe { ffi::rsqml_create_engine() };
-        assert!(!p.is_null());
+  pub fn new() -> Engine {
+    let p = unsafe { ffi::rsqml_create_engine() };
+    assert!(!p.is_null());
 
-        let i = Arc::new(EngineInternal {
-            p: p,
-        });
+    let i = Arc::new(EngineInternal {
+      p: p,
+    });
 
-        Engine {
-            i: i
-        }
+    Engine {
+      i: i
     }
+  }
 
-    pub fn new_headless() -> Engine {
-        let p = unsafe { ffi::rsqml_create_engine_headless() };
-        assert!(!p.is_null());
+  pub fn new_headless() -> Engine {
+    let p = unsafe { ffi::rsqml_create_engine_headless() };
+    assert!(!p.is_null());
 
-        let i = Arc::new(EngineInternal {
-            p: p,
-        });
+    let i = Arc::new(EngineInternal {
+      p: p,
+    });
 
-        Engine {
-            i: i
-        }
+    Engine {
+      i: i
     }
+  }
 
-    pub fn load_url(&mut self, path: &str) {
-        unsafe {
-            ffi::rsqml_engine_load_url(self.i.p, path.as_ptr() as *const c_char,
-                                       path.len() as c_uint);
-        }
+  pub fn load_url(&mut self, path: &str) {
+    unsafe {
+      ffi::rsqml_engine_load_url(self.i.p, path.as_ptr() as *const c_char,
+       path.len() as c_uint);
     }
+  }
 
-    pub fn load_data(&mut self, data: &str) {
-        unsafe {
-            ffi::rsqml_engine_load_from_data(self.i.p, data.as_ptr() as *const c_char,
-                                             data.len() as c_uint);
-        }
+  pub fn load_data(&mut self, data: &str) {
+    unsafe {
+      ffi::rsqml_engine_load_from_data(self.i.p, data.as_ptr() as *const c_char,
+       data.len() as c_uint);
     }
+  }
 
-    pub fn load_local_file<P: AsRef<Path>>(&mut self, name: P) {
-        let path_raw = std::env::current_dir().unwrap().join(name);
-        let path
-            = if cfg!(windows) {
-                format!("file:///{}",path_raw.display())
-            } else {
-                format!("file://{}",path_raw.display())
-            } ;
-        self.load_url(&path);
-    }
+  pub fn load_local_file<P: AsRef<Path>>(&mut self, name: P) {
+    let path_raw = std::env::current_dir().unwrap().join(name);
+    let path
+    = if cfg!(windows) {
+      format!("file:///{}",path_raw.display())
+    } else {
+      format!("file://{}",path_raw.display())
+    } ;
+    self.load_url(&path);
+  }
 
-    pub fn exec(self) {
-        unsafe { ffi::rsqml_app_exec(); }
-    }
+  pub fn exec(self) {
+    unsafe { ffi::rsqml_app_exec(); }
+  }
 
     /*
     pub fn handle(&self) -> Handle {
@@ -133,52 +133,52 @@ impl Engine {
     */
 
     pub fn set_property<T: Object>(&mut self, name: &str, obj: T) {
-        unsafe {
-            let mo = obj.qt_metaobject().p;
-            let mut boxed = Box::new(PropHdr { qobj: std::ptr::null_mut(), obj: obj });
-            let qobj = ffi::rsqml_metaobject_instantiate(
-                mo, slot_handler::<T>, &mut *boxed as *mut PropHdr<T> as *mut c_void);
+      unsafe {
+        let mo = obj.qt_metaobject().p;
+        let mut boxed = Box::new(PropHdr { qobj: std::ptr::null_mut(), obj: obj });
+        let qobj = ffi::rsqml_metaobject_instantiate(
+          mo, slot_handler::<T>, &mut *boxed as *mut PropHdr<T> as *mut c_void);
 
-            boxed.qobj = qobj;
+        boxed.qobj = qobj;
 
-            ffi::rsqml_engine_set_property(self.i.p, name.as_ptr() as *const c_char,
-                                           name.len() as c_uint, qobj);
+        ffi::rsqml_engine_set_property(self.i.p, name.as_ptr() as *const c_char,
+         name.len() as c_uint, qobj);
 
-            std::mem::forget(boxed);
-        }
+        std::mem::forget(boxed);
+      }
     }
-}
+  }
 
-/* MetaObjects currently leak. Once a cache system is implemented, this should be fine. */
+  /* MetaObjects currently leak. Once a cache system is implemented, this should be fine. */
 
-#[allow(missing_copy_implementations)]
-pub struct MetaObject {
+  #[allow(missing_copy_implementations)]
+  pub struct MetaObject {
     p: *mut ffi::QrsMetaObject
-}
+  }
 
-impl MetaObject {
+  impl MetaObject {
     pub fn new() -> MetaObject {
-        let p = unsafe { ffi::rsqml_metaobject_create() };
-        assert!(!p.is_null());
+      let p = unsafe { ffi::rsqml_metaobject_create() };
+      assert!(!p.is_null());
 
-        MetaObject{p:p}
+      MetaObject{p:p}
     }
 
     pub fn add_func(self,ty:&str,name:&str,argc:u8) -> MetaObject {
-        if ty == "slot"{
-            unsafe {
-                ffi::rsqml_metaobject_add_slot(self.p, name.as_ptr() as *const c_char,
-                                               name.len() as c_uint, argc as c_uint);
-            }
-        }else{
-            unsafe {
-                ffi::rsqml_metaobject_add_signal(self.p, name.as_ptr() as *const c_char,
-                                                 name.len() as c_uint, argc as c_uint);
-            }
+      if ty == "slot"{
+        unsafe {
+          ffi::rsqml_metaobject_add_slot(self.p, name.as_ptr() as *const c_char,
+           name.len() as c_uint, argc as c_uint);
         }
-        self
+      }else{
+        unsafe {
+          ffi::rsqml_metaobject_add_signal(self.p, name.as_ptr() as *const c_char,
+           name.len() as c_uint, argc as c_uint);
+        }
+      }
+      self
     }
-}
+  }
 
 /*
 pub struct Handle {
@@ -224,10 +224,10 @@ impl Handle {
 
 #[cfg(test)]
 mod test {
-    use super::*;
+  use super::*;
 
-    #[test]
-    fn test_create_engine() {
-        Engine::new_headless();
-    }
+  #[test]
+  fn test_create_engine() {
+    Engine::new_headless();
+  }
 }
